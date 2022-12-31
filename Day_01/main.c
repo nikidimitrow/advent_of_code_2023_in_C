@@ -1,76 +1,46 @@
-//:for: uint32_t
-#include <stdint.h> 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-//:for: fopen, fgets, feof, fflush
-#include <stdio.h>  
+int main(int argc, char *argv[]) {
+    // Open the input file
+    FILE *fp = fopen("input", "r");
+    if (fp == NULL) {
+        perror("Failed to open input file");
+        return 1;
+    }
 
-//:for strcmp
-#include <string.h> 
+    // Initialize variables to keep track of the current index and the current sum
+    int index = 0;
+    int temp_index = 0;
+    __int128 sum = 0;
+    __int128 temp_sum = 0;
 
-int main(){
-    printf("[BEG:main]\n");
-    fflush(stdout);
+    // Read the lines in the file one by one
+    char line[1024];
+    while (fgets(line, sizeof(line), fp) != NULL) {
+        // If the line is empty, print the index and sum and reset them
+        if (line[0] == '\n') {
+            index++;
+            sum = 0;
+        } else {
+            // Otherwise, parse the number and add it to the sum
+            __int128 number = atoll(line);
+            sum += number;
 
-    size_t num_non_empty_lines_found = 0;
-    FILE* file_pointer = NULL;
-    const char* file_name = "input";
-    file_pointer = fopen( file_name, "r" );
+            if(temp_sum < sum){
+                temp_sum = sum;
+                temp_index = index;
+            }
+        }
+    }
 
-    //: Init to null character because fgets
-    //: will not change string if file is empty.
-    //: Leading to reporting that an empty file
-    //: contains exactly 1 non-blank line.
-    //:
-    //: Macro contains todays date, as a paranoid
-    //: measure to ensure no collisions with
-    //: other people's code.
-    #define JOHN_MARKS_MAX_LINE_2019_03_03 256
-    char single_line[ 
-        JOHN_MARKS_MAX_LINE_2019_03_03 
-    ] = "\0";
-    int max_line = JOHN_MARKS_MAX_LINE_2019_03_03;
-    #undef  JOHN_MARKS_MAX_LINE_2019_03_03
+    // Print the final index and sum
+    printf("Index: %d Sum: %lld\n", temp_index, (long long) temp_sum);
+    // Answer is 67450 at 183 index
+    
+    // Close the input file
+    fclose(fp);
 
-    //: This could happen if you accidentially
-    //: spelled the filename wrong:
-    if(NULL==file_pointer){
-        printf("[ERROR:CheckFileNameSpelling]\n");
-        return( 1 );
-    };;
-
-    //# DONT DO THIS! If you spelled the file  #//
-    //# name wrong, this condition will lead   #//
-    //# to an infinite loop.                   #//
-    //- while( !feof(file_pointer )){ ... }    -//  
-    while(fgets( 
-    /**/single_line 
-    ,   max_line
-    ,   file_pointer 
-    )){
-
-        //: Check for empty lines:
-        if( strcmp(single_line,"\n"  ) != 0 &&
-            strcmp(single_line,"\r\n") != 0 &&
-            strcmp(single_line,"\0"  ) != 0 &&
-        1){
-            printf("[LINE_HAS_CONTENT]\n");
-            num_non_empty_lines_found++;
-        }else{
-            printf("[LINE_IS_EMPTY]\n");
-            continue;
-        };;
-
-        //: Do stuff with non empty line:
-        printf( "[Content]:%s\n", single_line );
-    };;
-
-    if(num_non_empty_lines_found<1){
-        printf("[WARNING:FileWasEmpty]\n");
-        printf("[EmptyFileName]:%s\n", file_name);
-        fflush(stdout);
-    };;
-
-    printf("[END:main]\n");fflush(stdout);
-    return( 0 );
-
-};;
+    return 0;
+}
